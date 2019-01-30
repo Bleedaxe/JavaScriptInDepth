@@ -64,10 +64,10 @@ let eventsOrganizer = (function (){
                 },
                 getRating: function () {
                     return Math.floor(ratings
-                        .map(r => r.rate * 0.6)
+                        .map(r => r.rate)
                         .reduce((prev, curr) => {
                             return prev + curr;
-                        }, 0));
+                        }, 0) / ratings.length * 0.6);
                 },
                 addRating: function (clientId, rate) {
                     if (ratings.map(r => r.clientId).indexOf(clientId) !== -1) {
@@ -78,6 +78,8 @@ let eventsOrganizer = (function (){
                         clientId,
                         rate
                     });
+
+                    return `Client: ${getClients(clientId).firstAndLastName} rated event with ${rate}`;
                 }
             };
 
@@ -208,6 +210,10 @@ let eventsOrganizer = (function (){
 
     let addClientToEvent = function (eventId, clientId){
         let event = getEventById(eventId);
+        if(event.isArchived()){
+            return "Event is archived.";
+        }
+
         let client = getClients(clientId);
 
         if (!event.flag && client.age < 18){
@@ -372,6 +378,7 @@ let eventsOrganizer = (function (){
 //Creating few events
 console.log(eventsOrganizer.createEvent("event1"));
 console.log(eventsOrganizer.createEvent("event2", false)); //Only for adults
+console.log(eventsOrganizer.createEvent("event for archiving", true, 14.55));
 console.log(eventsOrganizer.createEvent("event3", true, 10)); //Add with entry fee
 console.log(eventsOrganizer.createEvent("event4"));
 console.log(eventsOrganizer.createEvent("event5"));
@@ -390,7 +397,7 @@ console.log(eventsOrganizer.getEvents());
 
 //Delete event
 console.log(eventsOrganizer.createEvent("eventForDeleting"));
-console.log(eventsOrganizer.deleteEvent(7));
+console.log(eventsOrganizer.deleteEvent(8));
 
 //Update event
 console.log(eventsOrganizer.updateEvent(1, '__event__'));
@@ -453,15 +460,16 @@ console.log(eventsOrganizer.getFilteredEvents((e) => e.name.includes('_')));
 //Try add client without enough money
 console.log(eventsOrganizer.addClientToEvent(3, 2));
 
-
-console.log(eventsOrganizer.addClientToEvent(3, 1));
+//Add income to event for archiving
 console.log(eventsOrganizer.addClientToEvent(3, 3));
-console.log(eventsOrganizer.addClientToEvent(3, 4));
 console.log(eventsOrganizer.addClientToEvent(3, 5));
 
 //Archive event
 console.log(eventsOrganizer.archiveEvent(3));
 console.log(eventsOrganizer.archiveEvent(3)); //Try to archive same event
+
+//Try to add client to archived event
+console.log(eventsOrganizer.addClientToEvent(3, 6));
 
 //Get income of archived event
 console.log(eventsOrganizer.eventIncome(3));
@@ -481,7 +489,34 @@ console.log(eventsOrganizer.getEvents(false));
 console.log(eventsOrganizer.createClient("VIP Client", 19, true, 10));
 console.log(eventsOrganizer.addClientToEvent(1, 6));
 console.log(eventsOrganizer.addClientToEvent(2, 6));
-console.log(eventsOrganizer.addClientToEvent(3, 6));
 console.log(eventsOrganizer.addClientToEvent(4, 6));
-console.log(eventsOrganizer.addClientToEvent(5, 6)); //VIP Client after this
-console.log(eventsOrganizer.addClientToEvent(6, 6)); //Not VIP any more...
+console.log(eventsOrganizer.addClientToEvent(5, 6));
+console.log(eventsOrganizer.addClientToEvent(6, 6)); //VIP Client after this
+console.log(eventsOrganizer.getClients(6).isVIP());
+console.log(eventsOrganizer.addClientToEvent(7, 6)); //Not VIP any more...
+console.log(eventsOrganizer.getClients(6).isVIP());
+
+//Create event for test rating
+console.log(eventsOrganizer.createEvent("Rated event", true, 0));
+
+//Add clients for event
+console.log(eventsOrganizer.addClientToEvent(10, 1));
+console.log(eventsOrganizer.addClientToEvent(10, 2));
+console.log(eventsOrganizer.addClientToEvent(10, 3));
+console.log(eventsOrganizer.addClientToEvent(10, 4));
+console.log(eventsOrganizer.addClientToEvent(10, 5));
+console.log(eventsOrganizer.addClientToEvent(10, 6));
+
+//Archive event
+console.log(eventsOrganizer.archiveEvent(10));
+
+//Rate event
+console.log(eventsOrganizer.rateEvent(1, 10, 3));
+console.log(eventsOrganizer.rateEvent(2, 10, 8));
+console.log(eventsOrganizer.rateEvent(3, 10, 2));
+console.log(eventsOrganizer.rateEvent(4, 10, 9));
+console.log(eventsOrganizer.rateEvent(5, 10, 1));
+console.log(eventsOrganizer.rateEvent(6, 10, 10));
+
+//Get all archived events
+console.log(eventsOrganizer.getEvents(true));
